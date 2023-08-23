@@ -36,7 +36,7 @@
     order = CONSTANT
     family = MONOMIAL
   []
-  [x00] 
+  [x00]
     # order = CONSTANT
     # family = MONOMIAL
     initial_condition = 0
@@ -252,13 +252,13 @@
     variable = porosityn
     property = porosity
     execute_on = 'TIMESTEP_BEGIN'
-  []  
+  []
   [permeability]
     type = PorousFlowPropertyAux
     variable = permeability
     property = permeability
     execute_on = 'TIMESTEP_BEGIN'
-  []  
+  []
   [gas_velocityx]
     type = PorousFlowDarcyVelocityComponent
     variable = gas_velocityx
@@ -266,8 +266,7 @@
     fluid_phase = 1
     # execute_on = 'LINEAR TIMESTEP_END'
     execute_on = 'INITIAL TIMESTEP_BEGIN'
-
-  []   
+  []
   [gas_velocityy]
     type = PorousFlowDarcyVelocityComponent
     variable = gas_velocityy
@@ -282,7 +281,7 @@
     component = x
     fluid_phase = 0
     execute_on = 'TIMESTEP_END'
-  []   
+  []
   [liq_velocityy]
     type = PorousFlowDarcyVelocityComponent
     variable = liq_velocityy
@@ -347,7 +346,7 @@
     variable = satg
     save_in = d8
   []
- 
+
 []
 
 [UserObjects]
@@ -407,11 +406,22 @@
     type = PorousFlowTemperature
     temperature = '323'
   []
+  # [water]
+  #   type = PorousFlowSingleComponentFluid
+  #   fp = fp1
+  #   phase = 0
+  # []
   [water]
     type = IMPRESDeerSingleComponent
     fp = fp1
     phase = 0
   []
+  # [water1]
+  #   type = IMPRESDeerSingleComponent
+  #   fp = fp1
+  #   phase = 0
+  #   at_nodes = true
+  # []
   [co2]
     type = PorousFlowSingleComponentFluid
     fp = true_co2
@@ -419,6 +429,7 @@
   []
   [velocity1]
     type = IMPRESDeerDarcyVelocityMaterial
+    initial_velocity = '0.001 0 0'
   []
 
 
@@ -458,7 +469,6 @@
     sum_s_res = 0.2
     phase = 1
   []
-
 []
 
 [Functions]
@@ -483,136 +493,133 @@
 
 []
 
-
-
-
 [BCs]
 
-  [injection2]
-    type = PorousFlowSink
-    variable = tracer
-    flux_function = tracerfunc
-    boundary = 'left'
-  []
-  [injection1]
-    type = PorousFlowSink
-    variable = satg
-    flux_function = gasfunc
-    boundary = 'left'
-  []
-  [injection3]
-    type = PorousFlowSink
-    variable = pwater
-    flux_function = waterfunc
-    boundary = 'left'
-  []
+  # [injection2]
+  #   type = PorousFlowSink
+  #   variable = tracer
+  #   flux_function = tracerfunc
+  #   boundary = 'left'
+  # []
+  # [injection1]
+  #   type = PorousFlowSink
+  #   variable = satg
+  #   flux_function = gasfunc
+  #   boundary = 'left'
+  # []
+#   [injection3]
+#     type = PorousFlowSink
+#     variable = pwater
+#     flux_function = waterfunc
+#     boundary = 'left'
+#   []
 
   [outp]
     type = DirichletBC
     variable = pwater
     value = 20e6
     boundary = right
-  []  
+  []
 
 []
 
-#  [Postprocessors]
-#    [tracer_mass]
-#      type = PorousFlowFluidMass
-#      phase = 0
-#      fluid_component = 1
-#      execute_on = TIMESTEP_END
-#      outputs = 'csv'
-#    []
-#    [sg]
-#      type = ElementAverageValue
-#      variable = satg
-#      execute_on = TIMESTEP_END
-#      outputs = 'csv'
-#    []
-#    [water_mass]
-#      type = PorousFlowFluidMass
-#      phase = 0
-#      fluid_component = 2
-#      execute_on = TIMESTEP_END
-#      outputs = 'csv'
-#    []
-#    [gas_mass]
-#      type = PorousFlowFluidMass
-#      phase = 1
-#      fluid_component = 0
-#      execute_on = TIMESTEP_END
-#      outputs = 'csv'
-#    []
-#    [density_water]
-#      type = ElementAverageValue
-#      variable = density
-#      execute_on = 'timestep_end'
-#      outputs = 'csv'
-#    []
-#    [porosity]
-#      type = ElementAverageValue
-#      variable = porosityn
-#      execute_on = 'INITIAL timestep_end'
-#      outputs = 'csv console'
-#    []
-#    [permeability]
-#     type = ElementAverageValue
-#     variable = permeability
-#     execute_on = 'INITIAL timestep_end'
-#     outputs = 'csv console'
-#    []
-#    [massfractiontracer]
-#      type = ElementAverageValue
-#      variable = mf3
-#      execute_on = 'timestep_end'
-#      outputs = 'csv'
-#    []
-#    [massfractionwater]
-#      type = ElementAverageValue
-#      variable = mf5
-#      execute_on = 'timestep_end'
-#      outputs = 'csv'
-#    []
-#    [vis_liq]
-#      type = ElementAverageValue
-#      variable = viscosity_liq
-#      execute_on = 'timestep_end'
-#      outputs = 'csv'
-#    []
-#    [vis_gas]
-#      type = ElementAverageValue
-#      variable = viscosity_gas
-#      execute_on = 'timestep_end'
-#      outputs = 'csv'
-#    []
-#    [efluent]
-#      type = PorousFlowFluidMass
-#      phase = 1
-#      fluid_component = 0
-#      execute_on = TIMESTEP_END
-#      block = '1'
-#      outputs = 'csv'
-#    []
+ [Postprocessors]
+   [tracer_mass]
+     type = PorousFlowFluidMass
+     phase = 0
+     fluid_component = 1
+     execute_on = TIMESTEP_END
+     outputs = 'csv'
+   []
+   [sg]
+     type = ElementAverageValue
+     variable = satg
+     execute_on = TIMESTEP_END
+     outputs = 'csv'
+   []
+   [water_mass]
+     type = PorousFlowFluidMass
+     phase = 0
+     fluid_component = 2
+     execute_on = TIMESTEP_END
+     outputs = 'csv'
+   []
+   [gas_mass]
+     type = PorousFlowFluidMass
+     phase = 1
+     fluid_component = 0
+     execute_on = TIMESTEP_END
+     outputs = 'csv'
+   []
+   [density_water]
+     type = ElementAverageValue
+     variable = density
+     execute_on = 'timestep_end'
+     outputs = 'csv'
+   []
+   [porosity]
+     type = ElementAverageValue
+     variable = porosityn
+     execute_on = 'INITIAL timestep_end'
+     outputs = 'csv console'
+   []
+   [permeability]
+    type = ElementAverageValue
+    variable = permeability
+    execute_on = 'INITIAL timestep_end'
+    outputs = 'csv console'
+   []
+   [massfractiontracer]
+     type = ElementAverageValue
+     variable = mf3
+     execute_on = 'timestep_end'
+     outputs = 'csv'
+   []
+   [massfractionwater]
+     type = ElementAverageValue
+     variable = mf5
+     execute_on = 'timestep_end'
+     outputs = 'csv'
+   []
+   [vis_liq]
+     type = ElementAverageValue
+     variable = viscosity_liq
+     execute_on = 'timestep_end'
+     outputs = 'csv'
+   []
+   [vis_gas]
+     type = ElementAverageValue
+     variable = viscosity_gas
+     execute_on = 'timestep_end'
+     outputs = 'csv'
+   []
+   [efluent]
+     type = PorousFlowFluidMass
+     phase = 1
+     fluid_component = 0
+     execute_on = TIMESTEP_END
+     block = '1'
+     outputs = 'csv'
+   []
 
-#   [pvx]
-#     type = ElementAverageValue
-#     variable = liq_velocityx
-#     execute_on = 'timestep_end'
-#     outputs = 'csv'
-#   []
-#   [pvy]
-#     type = ElementAverageValue
-#     variable = liq_velocityy
-#     execute_on = 'timestep_end'
-#     outputs = 'csv'
-#   []
+  [pvx]
+    type = ElementAverageValue
+    variable = liq_velocityx
+    execute_on = 'timestep_end'
+    outputs = 'csv'
+  []
+  [pvy]
+    type = ElementAverageValue
+    variable = liq_velocityy
+    execute_on = 'timestep_end'
+    outputs = 'csv'
+  []
 
-# []
+[]
 
 
 [Preconditioning]
-  active = 'bounded'
+  active = 'basic'
   [basic]
     type = SMP
     full = true
@@ -644,7 +651,7 @@
   start_time = 0
   end_time = 10
   dtmax = 10
-  
+
   [TimeStepper]
     type = IterationAdaptiveDT
     dt = 1

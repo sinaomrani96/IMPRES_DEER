@@ -27,12 +27,12 @@ IMPRESDeerSingleComponentTempl<is_ad>::validParams()
 
 template <bool is_ad>
 IMPRESDeerSingleComponentTempl<is_ad>::IMPRESDeerSingleComponentTempl(
-    const InputParameters & parameters)
-  : PorousFlowFluidPropertiesBaseTempl<is_ad>(parameters),
-    _darcy_velocity_old(this->template getMaterialPropertyOldByName<std::vector<RealVectorValue>>("PorousFlow_darcy_velocity1_qp")),
-    _fp(this->template getUserObject<SinglePhaseFluidProperties>("fp"))
-{
-}
+    const InputParameters &parameters)
+    : PorousFlowFluidPropertiesBaseTempl<is_ad>(parameters),
+      _darcy_velocity_old(
+          this->template getMaterialPropertyOldByName<
+              std::vector<RealVectorValue>>("PorousFlow_darcy_velocity_qp")),
+      _fp(this->template getUserObject<SinglePhaseFluidProperties>("fp")) {}
 
 template <bool is_ad>
 void
@@ -77,9 +77,7 @@ IMPRESDeerSingleComponentTempl<is_ad>::computeQpProperties()
 
       (*_density)[_qp] = rho;
       (*_viscosity)[_qp] = mu / _pressure_to_Pascals / _time_to_seconds;
-    }
-    else
-    {
+    } else {
       // Density and viscosity, and derivatives wrt pressure and temperature
       Real rho, drho_dp, drho_dT, mu, dmu_dp, dmu_dT;
       _fp.rho_mu_from_p_T(MetaPhysicL::raw_value(_porepressure[_qp][_phase_num]) *
@@ -94,11 +92,12 @@ IMPRESDeerSingleComponentTempl<is_ad>::computeQpProperties()
       (*_density)[_qp] = rho;
       (*_ddensity_dp)[_qp] = drho_dp * _pressure_to_Pascals;
       (*_ddensity_dT)[_qp] = drho_dT;
-      velocity_abs = std::sqrt(MetaPhysicL::raw_value(_darcy_velocity_old[_qp][0]).norm() * MetaPhysicL::raw_value(_darcy_velocity_old[_qp][0]).norm());
+      velocity_abs =
+          MetaPhysicL::raw_value(_darcy_velocity_old[_qp][_phase_num]).norm();
+
       (*_viscosity)[_qp] = velocity_abs;
       (*_dviscosity_dp)[_qp] = 0 / _time_to_seconds;
       (*_dviscosity_dT)[_qp] = 0 / _pressure_to_Pascals / _time_to_seconds;
-
     }
   }
 
