@@ -19,47 +19,58 @@ IMPRESDeerDarcyVelocityMaterial::validParams()
                                            "Gravitational acceleration vector downwards (m/s^2)");
   params.addClassDescription("This Material calculates the Darcy velocity for all phases");
   params.addPrivateParam<std::string>("pf_material_type", "darcy_velocity");
-  params.addParam<Real>("initial_velocity", 0.001, "The Initial Velocity");
+  RealVectorValue v(0, 0, 0);
+  params.addParam<RealVectorValue>("initial_velocity", v,
+                                   "The Initial Velocity");
   params.set<bool>("at_nodes") = false;
   return params;
 }
 
-IMPRESDeerDarcyVelocityMaterial::IMPRESDeerDarcyVelocityMaterial(const InputParameters & parameters)
-  : PorousFlowMaterial(parameters),
-    _num_phases(_dictator.numPhases()),
-    _num_var(_dictator.numVariables()),
-    _permeability(getMaterialProperty<RealTensorValue>("PorousFlow_permeability_qp")),
-    _dpermeability_dvar(
-        getMaterialProperty<std::vector<RealTensorValue>>("dPorousFlow_permeability_qp_dvar")),
-    _dpermeability_dgradvar(getMaterialProperty<std::vector<std::vector<RealTensorValue>>>(
-        "dPorousFlow_permeability_qp_dgradvar")),
-    _fluid_density(getMaterialProperty<std::vector<Real>>("PorousFlow_fluid_phase_density_qp")),
-    _dfluid_density_dvar(getMaterialProperty<std::vector<std::vector<Real>>>(
-        "dPorousFlow_fluid_phase_density_qp_dvar")),
-    _fluid_viscosity(getMaterialProperty<std::vector<Real>>("PorousFlow_viscosity_qp")),
-    _dfluid_viscosity_dvar(
-        getMaterialProperty<std::vector<std::vector<Real>>>("dPorousFlow_viscosity_qp_dvar")),
-    _relative_permeability(
-        getMaterialProperty<std::vector<Real>>("PorousFlow_relative_permeability_qp")),
-    _drelative_permeability_dvar(getMaterialProperty<std::vector<std::vector<Real>>>(
-        "dPorousFlow_relative_permeability_qp_dvar")),
-    _grad_p(getMaterialProperty<std::vector<RealGradient>>("PorousFlow_grad_porepressure_qp")),
-    _dgrad_p_dgradvar(getMaterialProperty<std::vector<std::vector<Real>>>(
-        "dPorousFlow_grad_porepressure_qp_dgradvar")),
-    _dgrad_p_dvar(getMaterialProperty<std::vector<std::vector<RealGradient>>>(
-        "dPorousFlow_grad_porepressure_qp_dvar")),
-    _gravity(getParam<RealVectorValue>("gravity")),
-    _darcy_velocity(declareProperty<std::vector<RealVectorValue>>("PorousFlow_darcy_velocity1_qp")),
-    _ddarcy_velocity_dvar(declareProperty<std::vector<std::vector<RealVectorValue>>>(
-        "dPorousFlow_darcy_velocity1_qp_dvar")),
-    _ddarcy_velocity_dgradvar(
-        declareProperty<std::vector<std::vector<std::vector<RealVectorValue>>>>(
-            "dPorousFlow_darcy_velocity1_qp_dgradvar"))
-{
+IMPRESDeerDarcyVelocityMaterial::IMPRESDeerDarcyVelocityMaterial(
+    const InputParameters &parameters)
+    : PorousFlowMaterial(parameters), _num_phases(_dictator.numPhases()),
+      _num_var(_dictator.numVariables()),
+      _permeability(
+          getMaterialProperty<RealTensorValue>("PorousFlow_permeability_qp")),
+      _dpermeability_dvar(getMaterialProperty<std::vector<RealTensorValue>>(
+          "dPorousFlow_permeability_qp_dvar")),
+      _dpermeability_dgradvar(
+          getMaterialProperty<std::vector<std::vector<RealTensorValue>>>(
+              "dPorousFlow_permeability_qp_dgradvar")),
+      _fluid_density(getMaterialProperty<std::vector<Real>>(
+          "PorousFlow_fluid_phase_density_qp")),
+      _dfluid_density_dvar(getMaterialProperty<std::vector<std::vector<Real>>>(
+          "dPorousFlow_fluid_phase_density_qp_dvar")),
+      _fluid_viscosity(
+          getMaterialProperty<std::vector<Real>>("PorousFlow_viscosity_qp")),
+      _dfluid_viscosity_dvar(
+          getMaterialProperty<std::vector<std::vector<Real>>>(
+              "dPorousFlow_viscosity_qp_dvar")),
+      _relative_permeability(getMaterialProperty<std::vector<Real>>(
+          "PorousFlow_relative_permeability_qp")),
+      _drelative_permeability_dvar(
+          getMaterialProperty<std::vector<std::vector<Real>>>(
+              "dPorousFlow_relative_permeability_qp_dvar")),
+      _grad_p(getMaterialProperty<std::vector<RealGradient>>(
+          "PorousFlow_grad_porepressure_qp")),
+      _dgrad_p_dgradvar(getMaterialProperty<std::vector<std::vector<Real>>>(
+          "dPorousFlow_grad_porepressure_qp_dgradvar")),
+      _dgrad_p_dvar(getMaterialProperty<std::vector<std::vector<RealGradient>>>(
+          "dPorousFlow_grad_porepressure_qp_dvar")),
+      _gravity(getParam<RealVectorValue>("gravity")),
+      _darcy_velocity(declareProperty<std::vector<RealVectorValue>>(
+          "PorousFlow_darcy_velocity_qp")),
+      _ddarcy_velocity_dvar(
+          declareProperty<std::vector<std::vector<RealVectorValue>>>(
+              "dPorousFlow_darcy_velocity_qp_dvar")),
+      _ddarcy_velocity_dgradvar(
+          declareProperty<
+              std::vector<std::vector<std::vector<RealVectorValue>>>>(
+              "dPorousFlow_darcy_velocity_qp_dgradvar")),
+      _initial_velocity(getParam<RealVectorValue>("initial_velocity")) {
   if (_nodal_material == true)
     mooseError("IMPRESDeerDarcyVelocityMaterial is only defined for at_nodes = false");
 }
-
 
 void
 IMPRESDeerDarcyVelocityMaterial::initQpStatefulProperties()
@@ -67,10 +78,7 @@ IMPRESDeerDarcyVelocityMaterial::initQpStatefulProperties()
   _darcy_velocity[_qp].resize(_num_phases);
 
   for (unsigned ph = 0; ph < _num_phases; ++ph)
-    _darcy_velocity[_qp][ph] = 
-      -(_permeability[_qp] * (_grad_p[_qp][ph] - _fluid_density[_qp][ph] * _gravity) *
-      _relative_permeability[_qp][ph] / _fluid_viscosity[_qp][ph]);
-
+    _darcy_velocity[_qp][ph] = _initial_velocity;
 }
 
 void

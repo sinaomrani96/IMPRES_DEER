@@ -93,8 +93,8 @@ protected:
   //  */
   MaterialProperty<std::vector<std::vector<std::vector<RealVectorValue>>>> &
       _ddarcy_velocity_dgradvar;
-    
-  // const std::vector<RealVectorValue> _initial_velocity;
+
+  const RealVectorValue _initial_velocity;
 
   // const MaterialProperty<std::vector<RealVectorValue>> & _darcy_velocity_old;
 
